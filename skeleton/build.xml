@@ -69,6 +69,7 @@
     <!-- set trace="yes" if you want to trace the praser actions -->
     <antlr
       target="${src}/decaf/Parser.g"
+      trace="yes"
       outputdirectory="${java}/decaf">
       <classpath>
         <pathelement location="${lib}/antlr.jar" />
