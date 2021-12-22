@@ -20,11 +20,17 @@ tokens
   "void";
   "true";
   "false";
+  "return";
+  "if";
+  "else";
+  "for";
+  "callout";
+  "break";
 }
 
 ID options { paraphrase = "an identifier"; } : ('a'..'z' | 'A'..'Z')+;
 
-WS_ : (' ' | '\n' {newline();}) {_ttype = Token.SKIP; };
+WS_ : (' ' | '\t' | '\n' {newline();}) {_ttype = Token.SKIP; };
 
 SL_COMMENT : "//" (~'\n')* '\n' {_ttype = Token.SKIP; newline (); };
 
