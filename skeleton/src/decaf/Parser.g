@@ -35,9 +35,9 @@ subexpr:
   location |
   method_call |
   literal |
-  SUB subexpr |
-  NEGATE subexpr |
-  LPAREN subexpr RPAREN;
+  SUB expr |
+  NEGATE expr |
+  LPAREN expr RPAREN;
 
 location: ID (LBRAC expr RBRAC)?;
 method_call: ID LPAREN RPAREN;
