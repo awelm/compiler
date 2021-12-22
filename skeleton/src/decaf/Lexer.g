@@ -38,7 +38,10 @@ WS_ : (' ' | '\t' | '\n' {newline();}) {_ttype = Token.SKIP; };
 
 SL_COMMENT : "//" (~'\n')* '\n' {_ttype = Token.SKIP; newline (); };
 
-CHAR : '\'' (ESC|~'\'') '\'';
+CHAR : '\''
+  (ESC|~('\'' | '\"' | '\\')) // dont allow unescaped ' " \ characters
+  '\''
+;
 STRING : '"' (ESC|~'"')* '"';
 
 SEMI : ';';
@@ -69,4 +72,4 @@ LPAREN options { paraphrase = "("; } : "(";
 RPAREN options { paraphrase = ")"; } : ")";
 
 protected
-ESC :  '\\' ('n'|'"');
+ESC :  '\\' ('n' | 't' | | '"' | '\'' | '\\');
