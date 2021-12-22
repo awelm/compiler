@@ -26,9 +26,13 @@ tokens
   "for";
   "callout";
   "break";
+  "continue";
 }
 
-ID options { paraphrase = "an identifier"; } : ('a'..'z' | 'A'..'Z')+;
+ID options { paraphrase = "an identifier"; } :
+  ('a'..'z' | 'A'..'Z' | '_')
+  ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*
+;
 
 WS_ : (' ' | '\t' | '\n' {newline();}) {_ttype = Token.SKIP; };
 

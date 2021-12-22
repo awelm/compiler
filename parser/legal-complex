@@ -1,0 +1,51 @@
+parser/legal-complex
+class Program {
+  boolean b, c[0x1], c[100];
+  int d, e[0x1], f[12];
+  
+  int abs(int a) {
+    b = a < 0;
+    if (b) { return -a; }
+    
+    // alone test block
+    {
+        int a, b, c;
+        boolean d, e, f;
+        a = b+c;
+        if(a >= 0) {a=0;} else {a=1;}
+
+        // for loop
+        for i = abs(a) + 102 - 1 + 0x100, i + i[10] == 0 {
+            {
+                break;
+                continue;
+            }
+        }
+
+        a += 10;
+        a -= func() + 10 - 0x12;
+        a[10] = c;
+        x = -!x+b-z*(---x + !x) + 1 + 0x0;
+    }
+
+    // bin ops
+    x=a+b; x=a-b; x=a*b; x=a/b; x=a%b;
+    x=a>b; x=a<b; x=a>=b; x=a<=b;
+    x=a==b; x=a!=b;
+    x=a&&b; x=a||b;
+    x=-1;
+
+    // char tests
+    a='c';
+
+    // naming gotchas
+    IF = 1;
+    thisisfortrue = 3;
+    _hello = 2;
+    a123 = 10;
+  }
+
+  void main() {
+    abs(-5);
+  }
+}

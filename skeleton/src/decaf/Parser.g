@@ -23,7 +23,7 @@ field_decl_list: field_decl_item (COMMA field_decl_item)*;
 field_decl_item: ID | (ID LBRAC int_literal RBRAC);
 
 // methods
-method_decl: (type | TK_void) ID LPAREN var_decl_csv RPAREN block;
+method_decl: (type | TK_void) ID LPAREN (param_decl_csv)? RPAREN block;
 method_call:
   ID LPAREN (expr)? (COMMA expr)* RPAREN |
   TK_callout LPAREN STRING (COMMA callout_arg)* RPAREN;
@@ -37,7 +37,9 @@ statement:
   TK_for ID EQ expr COMMA expr block |
   method_call SEMI |
   TK_return (expr)? SEMI |
-  TK_break SEMI;
+  TK_break SEMI |
+  TK_continue SEMI |
+  block;
 
 // expressions
 expr: subexpr (bin_op subexpr)*;
@@ -52,9 +54,12 @@ subexpr:
 // data access
 location: ID (LBRAC expr RBRAC)?;
 
-// variable or param declaration
+// function param and variable declarations
+param_decl_csv: type ID (COMMA type ID)*;
+var_decl_csv: type ID (COMMA ID)*;
+
+// types 
 type: TK_int | TK_boolean;
-var_decl_csv: (type ID)? (COMMA type ID)*;
 
 // operations
 bin_op: arith_op | rel_op | eq_op | COND_OP;
