@@ -29,7 +29,7 @@ tokens
   "continue";
 }
 
-ID options { paraphrase = "an identifier"; } :
+ID:
   ('a'..'z' | 'A'..'Z' | '_')
   ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*
 ;
@@ -64,12 +64,12 @@ DECIMAL_LITERAL : ('0'..'9')+;
 HEX_LITERAL : "0x" ('0'..'9'|'a'..'f'|'A'..'F')+;
 
 //all braces
-LCURLY options { paraphrase = "{"; } : "{";
-RCURLY options { paraphrase = "}"; } : "}";
-LBRAC options { paraphrase = "["; } : "[";
-RBRAC options { paraphrase = "]"; } : "]";
-LPAREN options { paraphrase = "("; } : "(";
-RPAREN options { paraphrase = ")"; } : ")";
+LCURLY: "{";
+RCURLY: "}";
+LBRAC: "[";
+RBRAC: "]";
+LPAREN: "(";
+RPAREN: ")";
 
 protected
 ESC :  '\\' ('n' | 't' | | '"' | '\'' | '\\');
