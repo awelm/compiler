@@ -15,7 +15,10 @@ options
 }
 
 // start
-program: TK_class ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
+program returns [IrClassDecl c] {c = new IrClassDecl();} : 
+  TK_class id:ID
+      {c.setName(id.getText());}
+  LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 
 // field
 field_decl: type field_decl_list SEMI;

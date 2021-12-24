@@ -118,12 +118,17 @@ class Main {
         	        }
         		}
         	}
-        	else if (CLI.target == CLI.PARSE || CLI.target == CLI.DEFAULT)
+        	else if (CLI.target == CLI.PARSE)
         	{
         		DecafScanner lexer = new DecafScanner(new DataInputStream(inputStream));
         		DecafParser parser = new DecafParser (lexer);
                 parser.program();
         	}
+			else if (CLI.target == CLI.INTER) {
+				DecafScanner lexer = new DecafScanner(new DataInputStream(inputStream));
+        		DecafParser parser = new DecafParser (lexer);
+                Ir ast = parser.program();
+			}
         	
         } catch(Exception e) {
         	// print the error:
