@@ -8,7 +8,7 @@ parserFolder = "parser"
 parserTestFiles = [f for f in listdir(parserFolder) if isfile(join(parserFolder, f))]
 
 for parserTestFile in parserTestFiles:
-    cmd = 'java -jar skeleton/dist/Compiler.jar -target parser parser/' + parserTestFile
+    cmd = 'java -jar skeleton/dist/Compiler.jar -target parse parser/' + parserTestFile
     output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     if parserTestFile.startswith("illegal") and 'line' in output.decode(sys.stdout.encoding):
         pass
