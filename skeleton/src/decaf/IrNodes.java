@@ -1,14 +1,34 @@
 package decaf;
+import java.util.ArrayList;
 
-abstract class Ir {};
+abstract class Ir {
+    public void visit() {}
+};
 
 // class
 class IrClassDecl extends Ir {
     private String name;
-    void setName(String n) {
+    private ArrayList<IrFieldDecl> fields = new ArrayList<IrFieldDecl>();
+    private ArrayList<IrMethodDecl> methods = new ArrayList<IrMethodDecl>();
+    public void addName(String n) {
         name=n;
     }
+    public void addField(IrFieldDecl field) {
+        fields.add(field);
+    }
+    public void addMethod(IrMethodDecl method) {
+        methods.add(method);
+    }
+    public void visit() {
+        String output = String.format("ClassName=%s, fields=%s, methods=%s", name, fields, methods);
+        System.out.println(output);
+    }
 };
+
+// class methods and fields
+abstract class IrMemberDecl extends Ir {};
+class IrFieldDecl extends IrMemberDecl {};
+class IrMethodDecl extends IrMemberDecl {};
 
 // expressions
 abstract class IrExpression extends Ir {};
@@ -34,11 +54,6 @@ class IrForStmt extends IrStatement {};
 class IrReturnStmt extends IrStatement {};
 class IrInvokeStmt extends IrStatement {};
 class IrBlock extends IrStatement {};
-
-// member
-abstract class IrMemberDecl extends Ir {};
-class IrMethodDecl extends IrMemberDecl {};
-class IrFieldDecl extends IrMemberDecl {};
 
 // vars and type
 class IrVarDecl extends Ir {};

@@ -15,18 +15,20 @@ options
 }
 
 // start
-program returns [IrClassDecl c] {c = new IrClassDecl();} : 
-  TK_class id:ID
-      {c.setName(id.getText());}
-  LCURLY (field_decl)* (method_decl)* RCURLY EOF;
+program returns [IrClassDecl c] {c = new IrClassDecl(); IrFieldDecl fd=null; IrMethodDecl md=null;} : 
+    TK_class id:ID
+      {c.addName(id.getText());} LCURLY
+    (fd=field_decl {c.addField(fd);})*
+    (md=method_decl {c.addMethod(md);})*
+    RCURLY EOF;
 
 // field
-field_decl: type field_decl_list SEMI;
+field_decl returns [IrFieldDecl f] {f = new IrFieldDecl();} : type field_decl_list SEMI;
 field_decl_list: field_decl_item (COMMA field_decl_item)*;
 field_decl_item: ID | (ID LBRAC int_literal RBRAC);
 
 // methods
-method_decl: (type | TK_void) ID LPAREN (param_decl_csv)? RPAREN block;
+method_decl returns [IrMethodDecl m] {m = new IrMethodDecl();} : (type | TK_void) ID LPAREN (param_decl_csv)? RPAREN block;
 method_call:
   ID LPAREN (expr)? (COMMA expr)* RPAREN |
   TK_callout LPAREN STRING (COMMA callout_arg)* RPAREN;
