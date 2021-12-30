@@ -128,7 +128,7 @@ class Main {
 				DecafScanner lexer = new DecafScanner(new DataInputStream(inputStream));
         		DecafParser parser = new DecafParser (lexer);
                 Ir ast = parser.program();
-				ast.visit();
+				ast.prettyPrint();
 			}
         	
         } catch(Exception e) {
