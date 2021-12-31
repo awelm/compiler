@@ -23,8 +23,8 @@ abstract class Ir {
 // class
 class IrClassDecl extends Ir {
     private String className;
-    private List<IrFieldDecl> fields = new List<IrFieldDecl>();
-    private List<IrMethodDecl> methods = new List<IrMethodDecl>();
+    private List<IrFieldDecl> fields = new List();
+    private List<IrMethodDecl> methods = new List();
     public String toString() {
         return String.format("IrClassDecl(className=%s, fields=%d, methods=%d)", className, fields.size(), methods.size());
     }
@@ -45,7 +45,7 @@ class IrClassDecl extends Ir {
 abstract class IrMemberDecl extends Ir {};
 
 class IrFieldDecl extends IrMemberDecl {
-    private List<IrFieldDeclMember> members = new List<IrFieldDeclMember>();
+    private List<IrFieldDeclMember> members = new List();
     public String toString() {
         return String.format("IrFieldDecl(members=%d)", members.size());
     }
@@ -72,22 +72,27 @@ class IrFieldDeclMember extends Ir {
 }
 
 class IrMethodDecl extends IrMemberDecl {
-    private IrType returnType;
+    private IrType returnType; // possible null
     private String methodName;
-    private List<IrVarDecl> parameters;
+    private List<IrVarDecl> parameters = new List();
     private IrBlock body;
     public String toString() {
         return String.format("IrMethodDecl(returnType=%b, methodName=%s, parameters=%d, body=%b)", returnType!=null, methodName, parameters.size(), body!=null);
     }
     public IrMethodDecl(IrType rt, String name, List<IrVarDecl> params, IrBlock b) {
         returnType=rt;
+        if(returnType != null)
+            children.add(returnType);
+
         methodName=name;
-        parameters=params;
-        body=b;
-        children.add(returnType); //TODO: add body once ready
+
         if(params != null)
+            parameters=params;
             for(Ir param : parameters)
                 children.add(param);
+
+        body=b;
+        children.add(b);
     }
 };
 
@@ -114,7 +119,24 @@ class IrIfStmt extends IrStatement {};
 class IrForStmt extends IrStatement {};
 class IrReturnStmt extends IrStatement {};
 class IrInvokeStmt extends IrStatement {};
-class IrBlock extends IrStatement {};
+
+class IrBlock extends IrStatement {
+    private List<IrVarDecl> vars = new List();
+    private List<IrStatement> statements = new List();
+    public String toString() {
+        return String.format("IrBlock(vars=%d, statements=%d)", vars.size(), statements.size());
+    }
+    public void addVars(List<IrVarDecl> newVars) {
+        for(IrVarDecl newVar : newVars) {
+            vars.add(newVar);
+            children.add(newVar);
+        }
+    }
+    public void addStatement(IrStatement s) {
+        statements.add(s);
+        children.add(s);
+    }
+};
 
 // vars and type
 class IrVarDecl extends Ir {
