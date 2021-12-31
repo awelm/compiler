@@ -37,15 +37,25 @@ class IrClassDecl extends Ir {
 abstract class IrMemberDecl extends Ir {};
 
 class IrFieldDecl extends IrMemberDecl {
-    private List<IrVarDecl> vars = new List<IrVarDecl>();
+    private List<IrFieldDeclMember> members = new List<IrFieldDeclMember>();
     public IrFieldDecl(IrType type, List<String> names) {
         for(String name : names) {
-            IrVarDecl varDecl = new IrVarDecl(type, name);
-            vars.add(varDecl);
-            children.add(varDecl);
+            IrFieldDeclMember member = new IrFieldDeclMember(type, name);
+            members.add(member);
+            children.add(member);
         }
     }
 };
+
+class IrFieldDeclMember extends Ir {
+    private IrType type;
+    private String name;
+    public IrFieldDeclMember(IrType t, String n) {
+        type=t;
+        name=n;
+        children.add(t);
+    } 
+}
 
 class IrMethodDecl extends IrMemberDecl {};
 
