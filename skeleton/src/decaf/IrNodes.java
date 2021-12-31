@@ -5,7 +5,7 @@ abstract class Ir {
     List<Ir> children = new List<Ir>();
 
     public void prettyPrint(int indent) {
-        System.out.print(this.getClass().getSimpleName().indent(indent));
+        System.out.print(this.toString().indent(indent));
         for(Ir child : children)
             child.prettyPrint(indent+1);
     }
@@ -13,15 +13,23 @@ abstract class Ir {
     public void prettyPrint() {
         prettyPrint(0);
     }
+
+    public void addChildrenList(List<Ir> newChildren) {
+        for(Ir node : newChildren)
+            children.add(node);
+    }
 };
 
 // class
 class IrClassDecl extends Ir {
-    private String name;
+    private String className;
     private List<IrFieldDecl> fields = new List<IrFieldDecl>();
     private List<IrMethodDecl> methods = new List<IrMethodDecl>();
+    public String toString() {
+        return String.format("IrClassDecl(className=%s, fields=%d, methods=%d)", className, fields.size(), methods.size());
+    }
     public void addName(String n) {
-        name=n;
+        className=n;
     }
     public void addField(IrFieldDecl field) {
         fields.add(field);
@@ -38,6 +46,9 @@ abstract class IrMemberDecl extends Ir {};
 
 class IrFieldDecl extends IrMemberDecl {
     private List<IrFieldDeclMember> members = new List<IrFieldDeclMember>();
+    public String toString() {
+        return String.format("IrFieldDecl(members=%d)", members.size());
+    }
     public IrFieldDecl(IrType type, List<String> names) {
         for(String name : names) {
             IrFieldDeclMember member = new IrFieldDeclMember(type, name);
@@ -50,6 +61,9 @@ class IrFieldDecl extends IrMemberDecl {
 class IrFieldDeclMember extends Ir {
     private IrType type;
     private String name;
+    public String toString() {
+        return String.format("IrFieldDeclMember(type=%b, name=%s)", type!=null, name);
+    }
     public IrFieldDeclMember(IrType t, String n) {
         type=t;
         name=n;
@@ -57,7 +71,25 @@ class IrFieldDeclMember extends Ir {
     } 
 }
 
-class IrMethodDecl extends IrMemberDecl {};
+class IrMethodDecl extends IrMemberDecl {
+    private IrType returnType;
+    private String methodName;
+    private List<IrVarDecl> parameters;
+    private IrBlock body;
+    public String toString() {
+        return String.format("IrMethodDecl(returnType=%b, methodName=%s, parameters=%d, body=%b)", returnType!=null, methodName, parameters.size(), body!=null);
+    }
+    public IrMethodDecl(IrType rt, String name, List<IrVarDecl> params, IrBlock b) {
+        returnType=rt;
+        methodName=name;
+        parameters=params;
+        body=b;
+        children.add(returnType); //TODO: add body once ready
+        if(params != null)
+            for(Ir param : parameters)
+                children.add(param);
+    }
+};
 
 // expressions
 abstract class IrExpression extends Ir {};
@@ -88,6 +120,9 @@ class IrBlock extends IrStatement {};
 class IrVarDecl extends Ir {
     private IrType type;
     private String name;
+    public String toString() {
+        return String.format("IrVarDecl(type=%b, name=%s)", type!=null, name);
+    }
     public IrVarDecl(IrType t, String n) {
         type=t;
         name=n;
@@ -97,6 +132,9 @@ class IrVarDecl extends Ir {
 
 class IrType extends Ir {
     private int type;
+    public String toString() {
+        return String.format("IrType(type=%d)", type);
+    }
     public IrType(int t) {
         type=t;
     }

@@ -19,7 +19,7 @@ options
  */
 
 // program: TK_class ID field_decl* method_decl* RCURLY EOF; 
-program returns [IrClassDecl c] {c = new IrClassDecl(); IrFieldDecl fd=null; IrMethodDecl md=null;} : 
+program returns [IrClassDecl c] {c = new IrClassDecl(); IrFieldDecl fd; IrMethodDecl md;} : 
     TK_class id:ID
       {c.addName(id.getText());} LCURLY
     (fd=field_decl {c.addField(fd);})*
@@ -31,14 +31,14 @@ program returns [IrClassDecl c] {c = new IrClassDecl(); IrFieldDecl fd=null; IrM
  */
 
 // field_decl: type field_decl_list SEMI; 
-field_decl returns [IrFieldDecl f] {f = null; IrType t=null; List<String> fdl;} : 
+field_decl returns [IrFieldDecl f] {f = null; IrType t; List<String> fdl;} : 
   t=type
   fdl=field_decl_list
   SEMI
     {f = new IrFieldDecl(t, fdl);};
 
 // field_decl_list: field_decl_item (COMMA field_decl_item)*; 
-field_decl_list returns [List<String> l] {l= new List<String>(); String s=null;} :
+field_decl_list returns [List<String> l] {l= new List<String>(); String s;} :
   s=field_decl_item {l.add(s);}
   (
   COMMA s=field_decl_item
@@ -58,7 +58,8 @@ field_decl_item returns [String s] {s=null; String n=null;} :
  */
 
 // method_decl: (type | TK_void) ID LPAREN (param_decl_csv)? RPAREN block; 
-method_decl returns [IrMethodDecl m] {m = new IrMethodDecl();} : (type | TK_void) ID LPAREN (param_decl_csv)? RPAREN block;
+method_decl returns [IrMethodDecl m] {m = null; IrType t=null; List<IrVarDecl> params=null; IrBlock b;} :
+  (t=type | TK_void) name:ID LPAREN (params=param_decl_csv)? RPAREN b=block {m=new IrMethodDecl(t, name.getText(), params, b);};
 method_call:
   ID LPAREN (expr)? (COMMA expr)* RPAREN |
   TK_callout LPAREN STRING (COMMA callout_arg)* RPAREN;
@@ -68,7 +69,7 @@ callout_arg: expr | STRING;
  * blocks
  */
 
-block: LCURLY (var_decl_csv SEMI)* (statement)*  RCURLY;
+block returns [IrBlock b] {b=null;} : LCURLY (var_decl_csv SEMI)* (statement)*  RCURLY;
 statement:
   location assign_op expr SEMI |
   TK_if LPAREN expr RPAREN block (TK_else block)? |
@@ -97,7 +98,12 @@ subexpr:
 location: ID (LBRAC expr RBRAC)?;
 
 // function param and variable declarations
-param_decl_csv: type ID (COMMA type ID)*;
+param_decl_csv returns [List<IrVarDecl> p] {p=new List<IrVarDecl>(); IrType t;} : 
+  t=type n:ID
+    {p.add(new IrVarDecl(t, n.getText()));}
+  (COMMA t=type nn:ID
+    {p.add(new IrVarDecl(t, nn.getText()));}
+  )*;
 var_decl_csv: type ID (COMMA ID)*;
 
 // types 
