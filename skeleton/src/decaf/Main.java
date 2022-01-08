@@ -1,5 +1,5 @@
 import java.io.*;
-import antlr.Token;
+import org.antlr.v4.runtime.*;
 import java6035.tools.CLI.*;
 
 class Main {
@@ -12,97 +12,97 @@ class Main {
 
         	if (CLI.target == CLI.SCAN)
         	{
-        		DecafScanner lexer = new DecafScanner(new DataInputStream(inputStream));
+        		DecafLexer lexer = new DecafLexer(CharStreams.fromStream(inputStream));
         		Token token;
         		boolean done = false;
         		while (!done)
         		{
         			try
         			{
-		        		for (token=lexer.nextToken(); token.getType()!=DecafParserTokenTypes.EOF; token=lexer.nextToken())
+		        		for (token=lexer.nextToken(); token.getType()!=DecafParser.EOF; token=lexer.nextToken())
 		        		{
 		        			String type = "";
 		        			String text = token.getText();
 		
 		        			switch (token.getType())
 		        			{
-		        			case DecafScannerTokenTypes.ID:
+		        			case DecafParser.ID:
 		        				type = " ID";
 		        				break;
 
 
-							case DecafScannerTokenTypes.CHAR:
+							case DecafParser.CHAR:
 		        				type = " CHAR";
 		        				break;
-							case DecafScannerTokenTypes.STRING:
+							case DecafParser.STRING:
 		        				type = " STRING";
 		        				break;
 
 
-							case DecafScannerTokenTypes.SEMI:
+							case DecafParser.SEMI:
 		        				type = " SEMI";
 		        				break;
-							case DecafScannerTokenTypes.COMMA:
+							case DecafParser.COMMA:
 		        				type = " COMMA";
 		        				break;
 
 
-							case DecafScannerTokenTypes.ADD:
+							case DecafParser.ADD:
 		        				type = " ADD";
 		        				break;
-							case DecafScannerTokenTypes.MULT:
+							case DecafParser.MULT:
 		        				type = " MULT";
 		        				break;
-							case DecafScannerTokenTypes.DIV:
+							case DecafParser.DIV:
 		        				type = " DIV";
 		        				break;
-							case DecafScannerTokenTypes.MOD:
+							case DecafParser.MOD:
 		        				type = " MOD";
 		        				break;
-							case DecafScannerTokenTypes.SUB:
+							case DecafParser.SUB:
 		        				type = " SUB";
 		        				break;
-							case DecafScannerTokenTypes.NEGATE:
+							case DecafParser.NEGATE:
 		        				type = " NEGATE";
 		        				break;
-							case DecafScannerTokenTypes.EQ:
+							case DecafParser.EQ:
 		        				type = " EQ";
 		        				break;
-							case DecafScannerTokenTypes.LESS:
+							case DecafParser.LESS:
 		        				type = " LESS";
 		        				break;
-							case DecafScannerTokenTypes.GREATER:
+							case DecafParser.GREATER:
 		        				type = " GREATER";
 		        				break;
-							case DecafScannerTokenTypes.COND_OP:
+							case DecafParser.COND_OP:
 		        				type = " COND_OP";
 		        				break;
 
 
-							case DecafScannerTokenTypes.DECIMAL_LITERAL:
+							case DecafParser.DECIMAL_LITERAL:
 		        				type = " DECIMAL_LITERAL";
 		        				break;
-							case DecafScannerTokenTypes.HEX_LITERAL:
+							case DecafParser.HEX_LITERAL:
 		        				type = " HEX_LITERAL";
 		        				break;
 
 
-							case DecafScannerTokenTypes.LCURLY:
+							case DecafParser.LCURLY:
 		        				type = " LCURLY";
 		        				break;
-							case DecafScannerTokenTypes.RCURLY:
+							case DecafParser.RCURLY:
 		        				type = " RCURLY";
 		        				break;
-							case DecafScannerTokenTypes.LBRAC:
+							case DecafParser.LBRAC:
 		        				type = " LBRAC";
 		        				break;
-							case DecafScannerTokenTypes.RBRAC:
+							case DecafParser.RBRAC:
 		        				type = " RBRAC";
 		        				break;
-							case DecafScannerTokenTypes.LPAREN:
+							case DecafParser.LPAREN:
 		        				type = " LPAREN";
 		        				break;
-							case DecafScannerTokenTypes.RPAREN:
+							case DecafParser.RPAREN:
 		        				type = " RPAREN";
 		        				break;
 		        			}
@@ -112,14 +112,15 @@ class Main {
         			} catch(Exception e) {
         	        	// print the error:
         	            System.out.println(CLI.infile+" "+e);
-        	            lexer.consume ();
+        	            lexer.skip();
         	        }
         		}
         	}
         	else if (CLI.target == CLI.PARSE || CLI.target == CLI.DEFAULT)
         	{
-        		DecafScanner lexer = new DecafScanner(new DataInputStream(inputStream));
-        		DecafParser parser = new DecafParser (lexer);
+        		DecafLexer lexer = new DecafLexer(CharStreams.fromStream(inputStream));
+				CommonTokenStream tokens = new CommonTokenStream(lexer);
+        		DecafParser parser = new DecafParser (tokens);
                 parser.program();
         	}
         	

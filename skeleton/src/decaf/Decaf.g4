@@ -99,7 +99,7 @@ WS_ : [ \t\n\r]+ -> skip;
 SL_COMMENT : '//' ~[\r\n]* -> skip; 
 
 CHAR : '\''
-  (ESC|~('\'' | '"' | '\\')) // dont allow unescaped ' " \ characters
+  (ESC|~['"\\]) // dont allow unescaped ' " \ characters
   '\''
 ;
 STRING : '"' (ESC|~'"')* '"';
@@ -131,4 +131,4 @@ RBRAC: ']';
 LPAREN: '(';
 RPAREN: ')';
 
-ESC :  '\\' ('n' | 't' | | '"' | '\'' | '\\');
+ESC :  '\\' ('n' | 't' | '"' | '\'' | '\\');
