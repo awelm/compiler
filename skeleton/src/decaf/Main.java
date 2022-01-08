@@ -1,5 +1,3 @@
-package decaf;
-
 import java.io.*;
 import antlr.Token;
 import java6035.tools.CLI.*;
