@@ -1,5 +1,7 @@
 import java.io.*;
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.gui.Trees;
 import java6035.tools.CLI.*;
 
 class Main {
@@ -121,7 +123,8 @@ class Main {
         		DecafLexer lexer = new DecafLexer(CharStreams.fromStream(inputStream));
 				CommonTokenStream tokens = new CommonTokenStream(lexer);
         		DecafParser parser = new DecafParser (tokens);
-                parser.program();
+                ParseTree tree = parser.program();
+				Trees.inspect(tree, parser);
         	}
         	
         } catch(Exception e) {
