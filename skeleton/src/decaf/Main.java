@@ -1,6 +1,6 @@
 import java.io.*;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.*;
 import org.antlr.v4.gui.Trees;
 import java6035.tools.CLI.*;
 
@@ -126,6 +126,18 @@ class Main {
                 ParseTree tree = parser.program();
 				Trees.inspect(tree, parser);
         	}
+			else if(CLI.target == CLI.INTER) {
+				DecafLexer lexer = new DecafLexer(CharStreams.fromStream(inputStream));
+				CommonTokenStream tokens = new CommonTokenStream(lexer);
+        		DecafParser parser = new DecafParser (tokens);
+                ParseTree tree = parser.program();
+				ParseTreeWalker walker = new ParseTreeWalker();
+				MakeProgram listener = new MakeProgram();
+				walker.walk(listener, tree);
+				Ir ast = listener.getAst();
+				System.out.println("AST: ");
+				System.out.println(ast);
+			}
         	
         } catch(Exception e) {
         	// print the error:
