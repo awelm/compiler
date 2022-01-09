@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.*;
 
 abstract class Ir {
     ArrayList<Ir> children = new ArrayList<Ir>();
@@ -41,28 +43,27 @@ class IrClassDecl extends Ir {
 abstract class IrMemberDecl extends Ir {};
 
 class IrFieldDecl extends IrMemberDecl {
-    private ArrayList<IrFieldDeclMember> members = new ArrayList();
+    private ArrayList<IrFieldDeclMember> members = new ArrayList<>();
     public String toString() {
         return String.format("IrFieldDecl(members=%d)", members.size());
     }
-    public IrFieldDecl(IrType type, ArrayList<String> names) {
-        for(String name : names) {
-            IrFieldDeclMember member = new IrFieldDeclMember(type, name);
-            members.add(member);
-            children.add(member);
-        }
+    public IrFieldDecl(ArrayList<IrFieldDeclMember> m) {
+        members=m;
+        addChildrenArrayList(m);
     }
 };
 
 class IrFieldDeclMember extends Ir {
     private IrType type;
     private String name;
+    private int size;
     public String toString() {
-        return String.format("IrFieldDeclMember(type=%b, name=%s)", type!=null, name);
+        return String.format("IrFieldDeclMember(type=%b, name=%s, size=%d)", type!=null, name, size);
     }
-    public IrFieldDeclMember(IrType t, String n) {
+    public IrFieldDeclMember(IrType t, String n, int s) {
         type=t;
         name=n;
+        size=s;
         children.add(t);
     } 
 }
@@ -149,11 +150,18 @@ class IrVarDecl extends Ir {
 };
 
 class IrType extends Ir {
-    private int type;
+    private String type;
+    private boolean isArray=false;
     public String toString() {
-        return String.format("IrType(type=%d)", type);
+        return String.format("IrType(type=%s, isArray=%b)", type, isArray);
     }
-    public IrType(int t) {
-        type=t;
+    public IrType(DecafParser.TypeContext tc, TerminalNode indexToken) {
+        if(tc.INT().getText() != "0")
+            type="int";
+        else if(tc.BOOLEAN().getText() != "0")
+            type="boolean";
+
+        if(indexToken != null)
+            isArray=true;
     }
 };

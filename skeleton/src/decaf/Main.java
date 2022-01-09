@@ -136,7 +136,7 @@ class Main {
 				walker.walk(listener, tree);
 				Ir ast = listener.getAst();
 				System.out.println("AST: ");
-				System.out.println(ast);
+				ast.prettyPrint();
 			}
         	
         } catch(Exception e) {
