@@ -124,7 +124,8 @@ class Main {
 				CommonTokenStream tokens = new CommonTokenStream(lexer);
         		DecafParser parser = new DecafParser (tokens);
                 ParseTree tree = parser.program();
-				Trees.inspect(tree, parser);
+				// Uncomment to display parse tree
+				//Trees.inspect(tree, parser);
         	}
 			else if(CLI.target == CLI.INTER) {
 				DecafLexer lexer = new DecafLexer(CharStreams.fromStream(inputStream));
