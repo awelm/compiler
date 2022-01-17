@@ -60,10 +60,10 @@ class IrFieldDeclMember extends Ir {
     public String toString() {
         return String.format("IrFieldDeclMember(type=%b, name=%s, size=%d)", type!=null, name, size);
     }
-    public IrFieldDeclMember(IrType t, String n, int s) {
+    public IrFieldDeclMember(IrType t, String n, Integer s) {
         type=t;
         name=n;
-        size=s;
+        size= s == null ? 1 : s.intValue();
         children.add(t);
     } 
 }
@@ -155,13 +155,13 @@ class IrType extends Ir {
     public String toString() {
         return String.format("IrType(type=%s, isArray=%b)", type, isArray);
     }
-    public IrType(DecafParser.TypeContext tc, TerminalNode indexToken) {
-        if(tc.INT().getText() != "0")
+    public IrType(DecafParser.TypeContext tc, DecafParser.Int_literalContext intLiteral) {
+        if(tc.INT() != null)
             type="int";
-        else if(tc.BOOLEAN().getText() != "0")
+        else if(tc.BOOLEAN() != null)
             type="boolean";
 
-        if(indexToken != null)
+        if(intLiteral != null)
             isArray=true;
     }
 };
