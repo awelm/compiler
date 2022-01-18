@@ -69,10 +69,10 @@ class MakeProgram implements DecafListener {
         System.err.println("exiting method_decl");
         IrType methodReturnType = Utils.createIrType(ctx.type(), null); // return types can't be arrays
         String methodName = ctx.ID().getText();
-        int paramCount = ctx.param_decl_csv().type().size();
-        //TODO: pop IrBlock here and add to IrMethodDecl
+        IrBlock body = (IrBlock) stack.pop();
+        int paramCount = ctx.param_decl_csv() == null ? 0 : ctx.param_decl_csv().type().size();
         ArrayList<IrVarDecl> params = (ArrayList<IrVarDecl>) Utils.popListFromStackAndReverse(stack, paramCount);
-        IrMethodDecl methodDecl = new IrMethodDecl(methodReturnType, methodName, params, new IrBlock());
+        IrMethodDecl methodDecl = new IrMethodDecl(methodReturnType, methodName, params, body);
         stack.push(methodDecl);
     }
 
@@ -95,6 +95,11 @@ class MakeProgram implements DecafListener {
 
     public void exitBlock(DecafParser.BlockContext ctx) {
         System.err.println("exiting block");
+        int statementCount = ctx.statement().size();
+        ArrayList<IrStatement> statements = (ArrayList<IrStatement>) Utils.popListFromStackAndReverse(stack, statementCount); 
+        int varDeclCount = ctx.var_decl_csv().size();
+        ArrayList<IrVarDecl> varDecls = (ArrayList<IrVarDecl>) Utils.popListFromStackAndReverse(stack, varDeclCount);  
+        stack.push(new IrBlock(varDecls, statements));
     }
 
     public void enterStatement(DecafParser.StatementContext ctx) {
@@ -102,6 +107,35 @@ class MakeProgram implements DecafListener {
 
     public void exitStatement(DecafParser.StatementContext ctx) {
         System.err.println("exiting statement");
+        IrStatement statement = null;
+        if(ctx.IF() != null) {
+            // if statement
+            IrBlock elseBlock = null;
+            if(ctx.ELSE() != null)
+                elseBlock = (IrBlock) stack.pop();
+            IrBlock ifBlock = (IrBlock) stack.pop();
+            IrExpression condition = (IrExpression) stack.pop();
+            stack.push(new IrIfStmt(condition, ifBlock, elseBlock));
+        }
+        else if(ctx.FOR() != null) {
+            // for statement
+            IrBlock body = (IrBlock) stack.pop();
+            IrExpression loopVarEndExpression = (IrExpression) stack.pop();
+            IrAssignStmt loopVarAssignStatement = (IrAssignStmt) stack.pop();
+            stack.push(new IrForStmt(loopVarAssignStatement, loopVarEndExpression, body));
+        }
+        else if(ctx.RETURN() != null) {
+            // return statement
+            stack.push(new IrReturnStmt((IrExpression) stack.pop()));
+        }
+        else if(ctx.BREAK() != null) {
+            // break statement
+            stack.push(new IrBreakStmt());
+        }
+        else if(ctx.CONTINUE() != null) {
+            // continue statement
+            stack.push(new IrContinueStmt());
+        }
     }
 
     public void enterExpr(DecafParser.ExprContext ctx) {
@@ -109,6 +143,15 @@ class MakeProgram implements DecafListener {
 
     public void exitExpr(DecafParser.ExprContext ctx) {
         System.err.println("exiting expr");
+        int subExprCount = ctx.subexpr().size(); 
+        int binOpCount = ctx.bin_op().size();
+        //TODO: iterate through list of binOps and reduce one at a time based on order and highest precedence
+        // multiplication, division, and mod have highest precedence
+        // then addition and subtraction
+        // then less-than and greater-than
+        // then equality and inequality
+        // then &&
+        // then ||
     }
 
     public void enterSubexpr(DecafParser.SubexprContext ctx) {
@@ -116,6 +159,67 @@ class MakeProgram implements DecafListener {
 
     public void exitSubexpr(DecafParser.SubexprContext ctx) {
         System.err.println("exiting subexpr");
+
+        // location
+        if(ctx.location() != null) {
+            DecafParser.LocationContext locationCtx = ctx.location();
+            String id = locationCtx.ID().getText();
+            if(locationCtx.expr() == null) {
+                // not indexed location
+                stack.push(new IrLocation(id, null));
+            } else {
+                IrExpression locationIndexExpr = (IrExpression) stack.pop();
+                stack.push(new IrLocation(id, locationIndexExpr));
+            }
+        }
+        // method call
+        else if(ctx.method_call() != null) {
+            DecafParser.Method_callContext callContext = ctx.method_call(); 
+            if(callContext.CALLOUT() != null) {
+                // callout expression
+                String functionName = callContext.STRING().getText();
+                ArrayList<IrExpression> args = new ArrayList();
+                // Note for callout expressions we can't always rely on the stack because string arguments
+                // are also possible, which aren't captured by IrExpressions or other Ir nodes
+                List<DecafParser.Callout_argContext> argCtxs = callContext.callout_arg(); 
+                Collections.reverse(argCtxs);
+                for(DecafParser.Callout_argContext argCtx : argCtxs) {
+                    if(argCtx.STRING() != null)
+                        args.add(new IrStringLiteral(argCtx.STRING().getText()));
+                    else
+                        args.add((IrExpression) stack.pop());
+                }
+                stack.push(new IrMethodCallExpr(functionName, args));
+            } else {
+                String functionName = callContext.ID().getText();
+                int expressionCount = callContext.expr().size();
+                ArrayList<IrExpression> args = (ArrayList<IrExpression>) Utils.popListFromStackAndReverse(stack, expressionCount);
+                stack.push(new IrMethodCallExpr(functionName, args));
+            }
+        }
+        // literal
+        else if(ctx.literal() != null) {
+            DecafParser.LiteralContext literalCtx = ctx.literal(); 
+            if(literalCtx.int_literal() != null) {
+                Integer value = Utils.getValueFromIntLiteral(literalCtx.int_literal());
+                stack.push(new IrIntLiteral(value));
+            }
+            else if(literalCtx.bool_literal() != null) {
+                Boolean value = Utils.getValueFromBoolLiteral(literalCtx.bool_literal());
+                stack.push(new IrBoolLiteral(value));
+            }
+            else {
+                // must be a char, so we convert it to the integer ASCII value
+                char c = literalCtx.CHAR().getText().charAt(0);
+                stack.push(new IrIntLiteral((int) c));
+            }
+        }
+        // multiply by -1
+        else if(ctx.SUB() != null)
+            stack.push(new IrUnaryOpExpr("-", (IrExpression) stack.pop()));
+        // invert
+        else if(ctx.NEGATE() != null)
+            stack.push(new IrUnaryOpExpr("!", (IrExpression) stack.pop())); 
     }
 
     public void enterLocation(DecafParser.LocationContext ctx) {
@@ -143,6 +247,12 @@ class MakeProgram implements DecafListener {
 
     public void exitVar_decl_csv(DecafParser.Var_decl_csvContext ctx) {
         System.err.println("exiting var_decl_csv");
+        int varDeclCount = ctx.ID().size();
+        IrType varType = Utils.createIrType(ctx.type(), null); // vars can't be arrays
+        for (int varDeclIndex = 0; varDeclIndex < varDeclCount; varDeclIndex++) {
+            String varName = ctx.ID(varDeclIndex).getText();
+            stack.push(new IrVarDecl(varType, varName));
+        } 
     }
 
     public void enterType(DecafParser.TypeContext ctx) {

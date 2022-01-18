@@ -1,6 +1,8 @@
 import org.antlr.v4.runtime.tree.*;
 import java.util.*;
 
+import javax.lang.model.util.ElementScanner14;
+
 public class Utils {
     public static IrType createIrType(DecafParser.TypeContext ctx, DecafParser.Int_literalContext intLiteral) {
         if(ctx != null) {
@@ -9,16 +11,23 @@ public class Utils {
             return null;
     }
 
-    public static Integer getValueFromIntLiteral(DecafParser.Int_literalContext intLiteral) {
-        if(intLiteral != null) {
-            if(intLiteral.DECIMAL_LITERAL() != null) {
+    public static Integer getValueFromIntLiteral(DecafParser.Int_literalContext intCtx) {
+        if(intCtx != null) {
+            if(intCtx.DECIMAL_LITERAL() != null) {
                 // integer is decimal
-                return Integer.parseInt(intLiteral.DECIMAL_LITERAL().getText());
+                return Integer.parseInt(intCtx.DECIMAL_LITERAL().getText());
             } else {
                 // otherwise its hex
-                String hexWithoutPrefix = intLiteral.HEX_LITERAL().getText().substring(2);
+                String hexWithoutPrefix = intCtx.HEX_LITERAL().getText().substring(2);
                 return Integer.parseInt(hexWithoutPrefix, 16);
             }
+        } else
+            return null;
+    }
+
+    public static Boolean getValueFromBoolLiteral(DecafParser.Bool_literalContext boolCtx) {
+        if(boolCtx != null) {
+            return boolCtx.TRUE() != null; 
         } else
             return null;
     }
