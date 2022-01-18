@@ -96,26 +96,226 @@ class IrMethodDecl extends IrMemberDecl {
 // expressions
 abstract class IrExpression extends Ir {};
 
+class IrLocation extends IrExpression {
+    private String id;
+    private IrExpression indexExpr; // possibly null
+    public String toString() {
+        return String.format("IrLocation(id=%s, indexExpr=%b)", id, indexExpr != null);
+    }
+    public IrLocation(String i, IrExpression ie) {
+        id=i;
+        indexExpr=ie;
+        if(indexExpr != null)
+            children.add(indexExpr);
+    }
+};
+
 abstract class IrLiteral extends IrExpression {};
-class IrIntLiteral extends IrLiteral {};
-class IrBoolLiteral extends IrLiteral {};
+
+class IrIntLiteral extends IrLiteral {
+    int value;
+    public String toString() {
+        return String.format("IrIntLiteral(%d)", value);
+    }
+    public IrIntLiteral(int v) {
+        value=v;
+    }
+};
+
+class IrBoolLiteral extends IrLiteral {
+    boolean value;
+    public String toString() {
+        return String.format("IrBoolLiteral(%b)", value);
+    }
+    public IrBoolLiteral(boolean v) {
+        value=v;
+    } 
+};
+
+// IrStringLiteral should only be used for callout args
+class IrStringLiteral extends IrLiteral {
+    String value;
+    public String toString() {
+        return String.format("IrStringLiteral(%s)", value);
+    }
+    public IrStringLiteral(String v) {
+        value=v;
+    } 
+}; 
 
 abstract class IrCallExpr extends IrExpression {};
-class IrMethodCallExpr extends IrCallExpr {};
-class IrCalloutExpr extends IrCallExpr {};
 
-class IrBinopExpr extends IrExpression {}; 
+class IrMethodCallExpr extends IrCallExpr {
+    private String functionName;
+    private ArrayList<IrExpression> args;
+    public String toString() {
+        return String.format("IrMethodCallExpr(funcName=%s, args=%d)", functionName, args.size());
+    }
+    public IrMethodCallExpr(String fn, ArrayList<IrExpression> as) {
+        functionName=fn;
+        args=as;
+        addChildrenArrayList(args);
+    }
+};
+
+class IrCalloutExpr extends IrCallExpr {
+    private String functionName;
+    private ArrayList<IrExpression> args;
+    public String toString() {
+        return String.format("IrCalloutExpr(funcName=%s, args=%d)", functionName, args.size());
+    }
+    public IrCalloutExpr(String fn, ArrayList<IrExpression> as) {
+        functionName=fn;
+        args=as;
+        addChildrenArrayList(args);
+    }
+};
+
+class IrUnaryOpExpr extends IrExpression {
+    private String op;
+    private IrExpression expr;
+    public String toString() {
+        return String.format("IrUnaryOpExpr(op=%s, expr=%b)", op, expr != null);
+    }
+    public IrUnaryOpExpr(String o, IrExpression e)  {
+        op=o;
+        expr=e;
+        children.add(expr);
+    }
+}; 
+
+class IrBinOpExpr extends IrExpression {
+    private String op;
+    private IrExpression leftExpr;
+    private IrExpression rightExpr;
+    public String toString() {
+        return String.format("IrBinOpExpr(op=%s, leftExpr=%b, rightExpr=%b)", op, leftExpr != null, rightExpr != null);
+    }
+    public IrBinOpExpr(String o, IrExpression le, IrExpression re)  {
+        op=o;
+        leftExpr=le;
+        rightExpr=re;
+        children.add(leftExpr);
+        children.add(rightExpr);
+    }
+}; 
+
 
 // statements
-abstract class IrStatement extends Ir {};
-class IrAssignStmt extends IrStatement {}; 
-class IrPlusAssignStmt extends IrStatement {};
-class IrBreakStmt extends IrStatement {};
-class IrContinueStmt extends IrStatement {};
-class IrIfStmt extends IrStatement {};
-class IrForStmt extends IrStatement {};
-class IrReturnStmt extends IrStatement {};
-class IrInvokeStmt extends IrStatement {};
+abstract class IrStatement extends Ir {
+   IrLocation location;
+   IrExpression expression; 
+   public String toString() {
+       return String.format("IrAssignStmt(location=%b, expr=%b)", location != null, expression != null);
+    }
+};
+
+class IrAssignStmt extends IrStatement {
+   public IrAssignStmt(IrLocation l, IrExpression e) {
+       location=l;
+       expression=e;
+       children.add(location);
+       children.add(expression);
+   }
+}; 
+
+class IrPlusAssignStmt extends IrStatement {
+   public IrPlusAssignStmt(IrLocation l, IrExpression e) {
+       location=l;
+       expression=e;
+       children.add(location);
+       children.add(expression);
+    } 
+};
+
+class IrMinusAssignStmt extends IrStatement {
+   public IrMinusAssignStmt(IrLocation l, IrExpression e) {
+       location=l;
+       expression=e;
+       children.add(location);
+       children.add(expression);
+    } 
+};
+
+class IrBreakStmt extends IrStatement {
+    public String toString() {
+        return String.format("IrBreakStmt()");
+     }
+};
+class IrContinueStmt extends IrStatement {
+    public String toString() {
+        return String.format("IrContinueStmt()");
+     }
+};
+
+class IrIfStmt extends IrStatement {
+    private IrExpression condition;
+    private IrBlock ifBlock;
+    private IrBlock elseBlock; // possibly null
+    public String toString() {
+        return String.format("IrIfStmt(cond=%b, ifBlock=%b, elseBlock=%b)", condition != null, ifBlock != null, elseBlock != null);
+    }
+    public IrIfStmt(IrExpression c, IrBlock ib, IrBlock eb) {
+        condition=c;
+        ifBlock=ib;
+        elseBlock=eb;
+        children.add(condition);
+        children.add(ifBlock);
+        if(elseBlock != null) 
+            children.add(elseBlock);
+     } 
+};
+
+class IrForStmt extends IrStatement {
+    // Assignment that gives the loop var its initial value. The loop var gets incremented after each loop body
+    private IrAssignStmt loopVarAssignment; 
+
+    // Loop terminates when loop var reaches this expression value. This expression is only evaluated once when
+    // the loop first starts 
+    private IrExpression loopVarEndVal; 
+
+    private IrBlock body;
+
+    public String toString() {
+        return String.format("IrForStmt(assign=%b, endExpr=%b, body=%b)", loopVarAssignment != null, loopVarEndVal != null, body != null);
+     }
+
+    public IrForStmt(IrAssignStmt lva, IrExpression lvev, IrBlock b) {
+        loopVarAssignment=lva;
+        loopVarEndVal=lvev;
+        body=b;  
+        children.add(loopVarAssignment); 
+        children.add(loopVarEndVal); 
+        children.add(body);
+    }
+};
+
+class IrReturnStmt extends IrStatement {
+    private IrExpression expression;
+    public String toString() {
+        return String.format("IrReturnStmt(expr=%b)", expression != null);
+     }
+    public IrReturnStmt(IrExpression e) {
+        expression=e;
+        children.add(expression);
+    }
+};
+
+class IrInvokeStmt extends IrStatement {
+    private IrMethodCallExpr methodCallExpression; // possibly null
+    private IrCalloutExpr calloutExpression; // possibly null
+    public String toString() {
+        return String.format("IrInvokeStmt(methodCall=%b, callout=%b)", methodCallExpression != null, calloutExpression != null);
+     }
+    public IrInvokeStmt(IrMethodCallExpr mce, IrCalloutExpr ce) {
+        methodCallExpression=mce;
+        calloutExpression=ce; 
+        if(methodCallExpression != null)
+            children.add(methodCallExpression);
+        if(calloutExpression != null)
+            children.add(calloutExpression);
+    }
+};
 
 class IrBlock extends IrStatement {
     private ArrayList<IrVarDecl> vars = new ArrayList();
@@ -123,15 +323,11 @@ class IrBlock extends IrStatement {
     public String toString() {
         return String.format("IrBlock(vars=%d, statements=%d)", vars.size(), statements.size());
     }
-    public void addVars(ArrayList<IrVarDecl> newVars) {
-        for(IrVarDecl newVar : newVars) {
-            vars.add(newVar);
-            children.add(newVar);
-        }
-    }
-    public void addStatement(IrStatement s) {
-        statements.add(s);
-        children.add(s);
+    public IrBlock(ArrayList<IrVarDecl> vs, ArrayList<IrStatement> ss) {
+        vars = vs;
+        statements = ss;
+        addChildrenArrayList(vs);
+        addChildrenArrayList(ss);
     }
 };
 
@@ -165,3 +361,4 @@ class IrType extends Ir {
             isArray=true;
     }
 };
+
